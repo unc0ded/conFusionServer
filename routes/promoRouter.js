@@ -31,9 +31,9 @@ promoRouter.route('/')
     .catch(err => next(err));
 })
 .delete((req, res, next) => {
-    Promotions.deleteMany({}).then(resp => {
+    Promotions.deleteMany({}).then(result => {
         res.status(200)
-        .json(resp);
+        .json(result);
     }, err => next(err))
     .catch(err => next(err));
 })
@@ -60,9 +60,9 @@ promoRouter.route('/:promoId')
     .catch(err => next(err));
 })
 .delete((req, res, next) => {
-    Promotions.findByIdAndDelete(req.params.promoId).then(result => {
+    Promotions.findByIdAndDelete(req.params.promoId).then(promo => {
         res.status(200)
-        .json(result);
+        .json(promo);
     }, err => next(err))
     .catch(err => next(err));
 });
