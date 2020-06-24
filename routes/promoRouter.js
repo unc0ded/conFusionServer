@@ -31,6 +31,7 @@ promoRouter.route('/')
     .catch(err => next(err));
 })
 .delete((req, res, next) => {
+    //remove() is deprecated, hence I have used deleteMany, which is equivalent
     Promotions.deleteMany({}).then(result => {
         res.status(200)
         .json(result);
@@ -60,6 +61,7 @@ promoRouter.route('/:promoId')
     .catch(err => next(err));
 })
 .delete((req, res, next) => {
+    //findByIdAndRemove is deprecated, which is why I have used findByIdAndDelete, which is equivalent
     Promotions.findByIdAndDelete(req.params.promoId).then(promo => {
         res.status(200)
         .json(promo);

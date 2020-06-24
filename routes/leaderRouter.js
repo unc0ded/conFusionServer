@@ -30,6 +30,7 @@ leaderRouter.route('/')
     .catch(err => next(err));
 })
 .delete((req, res, next) => {
+    //remove() is deprecated, hence I have used deleteMany, which is equivalent
     Leaders.deleteMany({}).then(result => {
         res.status(200)
         .json(result);
@@ -59,6 +60,7 @@ leaderRouter.route('/:leaderId')
     .catch(err => next(err));
 })
 .delete((req, res, next) => {
+    //findByIdAndRemove is deprecated, which is why I have used findByIdAndDelete, which is equivalent
     Leaders.findByIdAndDelete(req.params.leaderId).then(leader => {
         res.status(200)
         .json(leader);
