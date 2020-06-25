@@ -7,7 +7,7 @@ const session = require('express-session');
 const FileStore = require('session-file-store')(session);
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+var userRouter = require('./routes/userRouter');
 var dishRouter = require('./routes/dishRouter');
 var promoRouter = require('./routes/promoRouter');
 var leaderRouter = require('./routes/leaderRouter');
@@ -40,55 +40,32 @@ app.use(session({
   store: new FileStore()
 }));
 
+app.use('/', indexRouter);
+app.use('/users', userRouter);
+
 app.use(function (req, res, next) {
   console.log(req.session);
 
   if(!req.session.user) {
 
-    let authHeader = req.headers.authorization;
-
-    if (!authHeader) {
       let err = new Error('You are not authenticated');
-
-      res.setHeader('WWW-Authenticate', 'Basic');
-
-      err.status = 401;
+      err.status = 403;
       return next(err);
-    }
-
-    let auth = new Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
-
-    let username = auth[0];
-    let password = auth[1];
-
-    if (username === 'admin' && password === 'password') {
-      req.session.user = 'admin'
-      next();
-    }
-    else {
-      let err = new Error('Please provide correct authentication details!');
-
-      res.setHeader('WWW-Authenticate', 'Basic');
-
-      err.status = 401;
-      return next(err);
-    }
   }
   else {
-    if(req.session.user === 'admin')
+
+    if(req.session.user === 'authenticated')
       next();
     else {
       let err = new Error('Not Authenticated (Correct cookie not found)!');
 
-      err.status = 401;
+      err.status = 403;
       return next(err);
     }
   }
 });
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
 app.use('/dishes', dishRouter);
 app.use('/promotions', promoRouter);
 app.use('/leaders', leaderRouter);
