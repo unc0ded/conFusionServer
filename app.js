@@ -29,39 +29,52 @@ app.set('view engine', 'pug');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
+app.use(cookieParser('8ACC0-122HA-67AB2-89XC1'));
 
 app.use(function (req, res, next) {
-  console.log(req.headers);
+  console.log(req.signedCookies);
 
-  let authHeader = req.headers.authorization;
+  if(!req.signedCookies.user) {
 
-  if (!authHeader) {
-    let err = new Error('You are not authenticated');
+    let authHeader = req.headers.authorization;
 
-    res.setHeader('WWW-Authenticate', 'Basic');
+    if (!authHeader) {
+      let err = new Error('You are not authenticated');
 
-    err.status = 401;
-    return next(err);
-  }
+      res.setHeader('WWW-Authenticate', 'Basic');
 
-  let auth = new Buffer(authHeader.split(' ')[1], 'base64').toString().split(':');
+      err.status = 401;
+      return next(err);
+    }
 
-  let username = auth[0];
-  let password = auth[1];
+    let auth = new Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
 
-  if (username === 'admin' && password === 'password') {
-    next();
+    let username = auth[0];
+    let password = auth[1];
+
+    if (username === 'admin' && password === 'password') {
+      res.cookie('user', 'admin', { signed: true });
+      next();
+    }
+    else {
+      let err = new Error('Please provide correct authentication details!');
+
+      res.setHeader('WWW-Authenticate', 'Basic');
+
+      err.status = 401;
+      return next(err);
+    }
   }
   else {
-    let err = new Error('Please provide correct authentication details!');
+    if(req.signedCookies.user === 'admin')
+      next();
+    else {
+      let err = new Error('Not Authenticated (Correct cookie not found)!');
 
-    res.setHeader('WWW-Authenticate', 'Basic');
-
-    err.status = 401;
-    return next(err);
+      err.status = 401;
+      return next(err);
+    }
   }
-
 });
 app.use(express.static(path.join(__dirname, 'public')));
 
