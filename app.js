@@ -3,6 +3,8 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const session = require('express-session');
+const FileStore = require('session-file-store')(session);
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -29,12 +31,19 @@ app.set('view engine', 'pug');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser('8ACC0-122HA-67AB2-89XC1'));
+//app.use(cookieParser('8ACC0-122HA-67AB2-89XC1'));
+app.use(session({
+  name: 'sessionId',
+  secret: '8ACC0-122HA-67AB2-89XC1',
+  saveUninitialized: false,
+  resave: false,
+  store: new FileStore()
+}));
 
 app.use(function (req, res, next) {
-  console.log(req.signedCookies);
+  console.log(req.session);
 
-  if(!req.signedCookies.user) {
+  if(!req.session.user) {
 
     let authHeader = req.headers.authorization;
 
@@ -53,7 +62,7 @@ app.use(function (req, res, next) {
     let password = auth[1];
 
     if (username === 'admin' && password === 'password') {
-      res.cookie('user', 'admin', { signed: true });
+      req.session.user = 'admin'
       next();
     }
     else {
@@ -66,7 +75,7 @@ app.use(function (req, res, next) {
     }
   }
   else {
-    if(req.signedCookies.user === 'admin')
+    if(req.session.user === 'admin')
       next();
     else {
       let err = new Error('Not Authenticated (Correct cookie not found)!');
