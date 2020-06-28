@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 
 const Users = require('../models/user');
+const authenticate = require('../authenticate');
 
 const userRouter = express.Router();
 
@@ -25,9 +26,10 @@ userRouter.post('/signup', (req, res, next) => {
   });
 });
 
-userRouter.post('/login', passport.authenticate('local'), (req, res, next) => {
+userRouter.post('/login', passport.authenticate('local'), (req, res) => {
+  let token = authenticate.getToken({ _id: req.user._id });
   res.status(200)
-  .json({ success: true, status: 'You are successfully logged in!'});
+  .json({ success: true, token: token, status: 'You are successfully logged in!'});
 });
 
 userRouter.get('/logout', (req, res) => {

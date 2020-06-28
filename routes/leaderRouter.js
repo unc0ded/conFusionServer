@@ -2,6 +2,7 @@ const express = require('express');
 //Parser not necessary as index.js (express app) already uses body parser
 //const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const authenticate = require('../authenticate');
 
 const Leaders = require('../models/leaders');
 
@@ -17,11 +18,11 @@ leaderRouter.route('/')
     }, err => next(err))
     .catch(err => next(err));
 })
-.put((req, res, next) => {
+.put(authenticate.verifyUser, (req, res, next) => {
     res.status(403)
     .send('PUT operation not supported on /leaders');
 })
-.post((req, res, next) => {
+.post(authenticate.verifyUser, (req, res, next) => {
     Leaders.create(req.body).then(leader => {
         console.log('Leader Created: ', leader);
         res.status(200)
@@ -29,7 +30,7 @@ leaderRouter.route('/')
     }, err => next(err))
     .catch(err => next(err));
 })
-.delete((req, res, next) => {
+.delete(authenticate.verifyUser, (req, res, next) => {
     //remove() is deprecated, hence I have used deleteMany, which is equivalent
     Leaders.deleteMany({}).then(result => {
         res.status(200)
@@ -46,11 +47,11 @@ leaderRouter.route('/:leaderId')
     }, err => next(err))
     .catch(err => next(err));
 })
-.post((req, res, next) => {
+.post(authenticate.verifyUser, (req, res, next) => {
     res.status(403)
     .send('POST operation not supported on /leaders/' + req.params.leaderId);
 })
-.put((req, res, next) => {
+.put(authenticate.verifyUser, (req, res, next) => {
     Leaders.findByIdAndUpdate(req.params.leaderId, {
         $set: req.body
     }, { new: true }).then(leader => {
@@ -59,7 +60,7 @@ leaderRouter.route('/:leaderId')
     }, err => next(err))
     .catch(err => next(err));
 })
-.delete((req, res, next) => {
+.delete(authenticate.verifyUser, (req, res, next) => {
     //findByIdAndRemove is deprecated, which is why I have used findByIdAndDelete, which is equivalent
     Leaders.findByIdAndDelete(req.params.leaderId).then(leader => {
         res.status(200)
