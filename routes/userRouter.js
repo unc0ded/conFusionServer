@@ -14,7 +14,14 @@ userRouter.get('/', (req, res, next) => {
 
 userRouter.post('/signup', (req, res, next) => {
 
-  Users.register({username: req.body.username}, req.body.password).then(user => {
+  Users.register({ username: req.body.username }, req.body.password).then(user => {
+    if (req.body.firstname)
+      user.firstname = req.body.firstname;
+    if (req.body.lastname)
+      user.lastname = req.body.lastname;
+    return user.save();
+  })
+  .then(user => {
     passport.authenticate('local')(req, res, () => {
       res.status(200)
       .json({ success: true, status: 'Registration Successful' });
