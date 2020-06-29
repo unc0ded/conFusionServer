@@ -18,11 +18,11 @@ leaderRouter.route('/')
     }, err => next(err))
     .catch(err => next(err));
 })
-.put(authenticate.verifyUser, (req, res, next) => {
+.put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     res.status(403)
     .send('PUT operation not supported on /leaders');
 })
-.post(authenticate.verifyUser, (req, res, next) => {
+.post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Leaders.create(req.body).then(leader => {
         console.log('Leader Created: ', leader);
         res.status(200)
@@ -30,7 +30,7 @@ leaderRouter.route('/')
     }, err => next(err))
     .catch(err => next(err));
 })
-.delete(authenticate.verifyUser, (req, res, next) => {
+.delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     //remove() is deprecated, hence I have used deleteMany, which is equivalent
     Leaders.deleteMany({}).then(result => {
         res.status(200)
@@ -47,11 +47,11 @@ leaderRouter.route('/:leaderId')
     }, err => next(err))
     .catch(err => next(err));
 })
-.post(authenticate.verifyUser, (req, res, next) => {
+.post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     res.status(403)
     .send('POST operation not supported on /leaders/' + req.params.leaderId);
 })
-.put(authenticate.verifyUser, (req, res, next) => {
+.put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Leaders.findByIdAndUpdate(req.params.leaderId, {
         $set: req.body
     }, { new: true }).then(leader => {
@@ -60,7 +60,7 @@ leaderRouter.route('/:leaderId')
     }, err => next(err))
     .catch(err => next(err));
 })
-.delete(authenticate.verifyUser, (req, res, next) => {
+.delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     //findByIdAndRemove is deprecated, which is why I have used findByIdAndDelete, which is equivalent
     Leaders.findByIdAndDelete(req.params.leaderId).then(leader => {
         res.status(200)

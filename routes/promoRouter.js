@@ -18,11 +18,11 @@ promoRouter.route('/')
     }, err => next(err))
     .catch(err => next(err));
 })
-.put(authenticate.verifyUser, (req, res, next) => {
+.put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     res.status(403)
     .send('PUT operation not supported on /promotions');
 })
-.post(authenticate.verifyUser, (req, res, next) => {
+.post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Promotions.create(req.body)
     .then(promo => {
         console.log('Promo created: ', promo);
@@ -31,7 +31,7 @@ promoRouter.route('/')
     }, err => next(err))
     .catch(err => next(err));
 })
-.delete(authenticate.verifyUser, (req, res, next) => {
+.delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     //remove() is deprecated, hence I have used deleteMany, which is equivalent
     Promotions.deleteMany({}).then(result => {
         res.status(200)
@@ -48,11 +48,11 @@ promoRouter.route('/:promoId')
     }, err => next(err))
     .catch(err => next(err));
 })
-.post(authenticate.verifyUser, (req, res, next) => {
+.post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     res.status(403)
     .send('POST operation not supported on /promotions/' + req.params.promoId);
 })
-.put(authenticate.verifyUser, (req, res, next) => {
+.put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Promotions.findByIdAndUpdate(req.params.promoId, {
         $set: req.body
     }, { new: true }).then(promo => {
@@ -61,7 +61,7 @@ promoRouter.route('/:promoId')
     }, err => next(err))
     .catch(err => next(err));
 })
-.delete(authenticate.verifyUser, (req, res, next) => {
+.delete(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     //findByIdAndRemove is deprecated, which is why I have used findByIdAndDelete, which is equivalent
     Promotions.findByIdAndDelete(req.params.promoId).then(promo => {
         res.status(200)
