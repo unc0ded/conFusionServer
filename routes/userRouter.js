@@ -56,6 +56,14 @@ userRouter.get('/logout', cors.corsWithOptions, (req, res) => {
     err.status = 403;
     next(err);
   }
+});
+
+userRouter.get('/facebook/token', passport.authenticate('facebook-token'), (req, res, next) => {
+  if (req.user) {
+    let token = authenticate.getToken({ _id: req.user._id });
+    res.status(200)
+    .json({ success: true, token: token, status: 'You are successfully logged in!' });
+  }
 })
 
 module.exports = userRouter;
