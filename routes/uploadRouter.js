@@ -1,5 +1,6 @@
 const express = require('express');
 const authenticate = require('../authenticate');
+const cors = require('./cors');
 const multer = require('multer');
 
 const storage = multer.diskStorage({
@@ -26,19 +27,20 @@ const upload = multer({
 const uploadRouter = express.Router();
 
 uploadRouter.route('/')
-.get(authenticate.verifyUser, (req, res, next) => {
+.options(cors.corsWithOptions, (req, res, next) => { res.sendStatus(200); })
+.get(cors.cors, authenticate.verifyUser, (req, res, next) => {
     res.status(403)
     .send('GET operation not supported on /imageUpload');
 })
-.put(authenticate.verifyUser, (req, res, next) => {
+.put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     res.status(403)
     .send('PUT operation not allowed on /imageUpload');
 })
-.post(authenticate.verifyUser, authenticate.verifyAdmin, upload.single('imageFile'), (req, res, next) => {
+.post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, upload.single('imageFile'), (req, res, next) => {
     res.status(200)
     .json(req.file);
 })
-.delete(authenticate.verifyUser, (req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     res.status(403)
     .send('DELETE operation not allowed on /imageUpload');
 });
