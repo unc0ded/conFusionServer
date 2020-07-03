@@ -1,6 +1,7 @@
 var express = require('express');
 const mongoose = require('mongoose');
 const passport = require('passport');
+const passMongoose = require('passport-local-mongoose');
 
 const Users = require('../models/user');
 const authenticate = require('../authenticate');
@@ -8,6 +9,7 @@ const cors = require('./cors');
 
 const userRouter = express.Router();
 
+userRouter.options('*', cors.corsWithOptions, (req, res, next) => { res.sendStatus(200); });
 /* GET users listing. */
 userRouter.get('/', cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
   Users.find({}).then(users => {
@@ -38,13 +40,28 @@ userRouter.post('/signup', cors.corsWithOptions, (req, res, next) => {
   });
 });
 
-userRouter.post('/login', cors.corsWithOptions, passport.authenticate('local'), (req, res) => {
-  let token = authenticate.getToken({ _id: req.user._id });
-  res.status(200)
-  .json({ success: true, token: token, status: 'You are successfully logged in!'});
+userRouter.post('/login', cors.corsWithOptions, (req, res, next) => { 
+  passport.authenticate('local', (err, user, info) => {
+    if (err)
+      return next(err);
+    if (!user) {
+      res.status(401)
+      .json({ success: false, status: 'Login Unsuccessful!', error: info });
+    }
+    req.login(user, err => {
+      if (err) {
+        res.status(401)
+        .json({ success: false, status: 'Login Unsuccessful!', error: 'Could not log in user.' });
+      }
+
+      let token = authenticate.getToken({ _id: req.user._id });
+      res.status(200)
+      .json({ success: true, status: 'You are successfully logged in!', token: token });
+    });
+  }) (req, res, next);
 });
 
-userRouter.get('/logout', cors.corsWithOptions, (req, res) => {
+userRouter.get('/logout', cors.corsWithOptions, (req, res, next) => {
   if(req.session) {
     req.session.destroy();
     res.clearCookie('sessionId');
@@ -64,6 +81,22 @@ userRouter.get('/facebook/token', passport.authenticate('facebook-token'), (req,
     res.status(200)
     .json({ success: true, token: token, status: 'You are successfully logged in!' });
   }
+});
+
+userRouter.get('/checkJWT', cors.corsWithOptions, (req, res, next) => {
+  passport.authenticate('jwt', { session: false }, (err, user, info) => {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      res.status(200)
+      .json({ status: 'JWT invalid', success: false, error: info });
+    }
+    else {
+      res.status(200)
+      .json({ status: 'JWT Valid', success: true, user: user });
+    }
+  }) (req, res, next);
 })
 
 module.exports = userRouter;

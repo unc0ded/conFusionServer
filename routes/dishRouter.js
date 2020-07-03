@@ -15,7 +15,7 @@ const dishRouter = express.Router();
 dishRouter.route('/')
 .options(cors.corsWithOptions, (req, res, next) => { res.sendStatus(200); })
 .get(cors.cors, (req, res, next) => {
-    Dishes.find({}).populate('comments.author').then(dishes => {
+    Dishes.find(req.query).populate('comments.author').then(dishes => {
         res.status(200)
         .json(dishes);
     }, err => next(err))

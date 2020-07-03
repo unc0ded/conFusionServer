@@ -14,7 +14,7 @@ const promoRouter = express.Router();
 promoRouter.route('/')
 .options(cors.corsWithOptions, (req, res, next) => { res.sendStatus(200); })
 .get(cors.cors, (req, res, next) => {
-    Promotions.find({}).then(promotions => {
+    Promotions.find(req.query).then(promotions => {
         res.status(200)
         .json(promotions);
     }, err => next(err))

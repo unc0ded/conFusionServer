@@ -14,7 +14,7 @@ const leaderRouter = express.Router();
 leaderRouter.route('/')
 .options(cors.corsWithOptions, (req, res, next) => { res.sendStatus(200); })
 .get(cors.cors, (req, res, next) => {
-    Leaders.find({}).then(leaders => {
+    Leaders.find(req.query).then(leaders => {
         res.status(200)
         .json(leaders);
     }, err => next(err))
