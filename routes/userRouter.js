@@ -83,7 +83,7 @@ userRouter.get('/facebook/token', passport.authenticate('facebook-token'), (req,
   }
 });
 
-userRouter.get('/checkJWT', cors.corsWithOptions, (req, res, next) => {
+userRouter.get('/checkJWTtoken', cors.corsWithOptions, (req, res, next) => {
   passport.authenticate('jwt', { session: false }, (err, user, info) => {
     if (err) {
       return next(err);

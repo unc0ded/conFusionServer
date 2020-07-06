@@ -8,6 +8,7 @@ const Dishes = require('../models/dishes');
 const favoriteRouter = express.Router();
 
 favoriteRouter.route('/')
+.options(cors.corsWithOptions, (req, res, next) => { res.sendStatus(200); })
 .get(authenticate.verifyUser, cors.cors, (req, res, next) => {
     Favorites.findOne({ user: req.user._id }).populate('user').populate('dishes').then(doc => {
         res.status(200)
@@ -82,6 +83,7 @@ favoriteRouter.route('/')
 });
 
 favoriteRouter.route('/:dishId')
+.options(cors.corsWithOptions, (req, res, next) => { res.sendStatus(200); })
 .get(cors.cors, authenticate.verifyUser, (req, res, next) => {
     Favorites.findOne({ user: req.user._id }).then(favdoc => {
         if (favdoc) {
@@ -149,7 +151,9 @@ favoriteRouter.route('/:dishId')
         if (doc) {
             if (doc.dishes.indexOf(req.params.dishId) !== -1) {
                 doc.dishes.splice(doc.dishes.indexOf(req.params.dishId), 1);
-                doc.save().then(doc => { res.status(200).json(doc); })
+                doc.save().then(doc => Favorites.findOne({ user: req.user._id }).populate('dishes'))
+                .then(fav => { res.status(200).json(fav)})
+                .catch(err => next(err));
             }
             else {
                 res.status(200)
