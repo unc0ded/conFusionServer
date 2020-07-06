@@ -34,10 +34,9 @@ favoriteRouter.route('/')
                     }
                 }, err => next(err));
             };
-            favdoc.save().then(savedDish => {
-                res.status(200)
-                .json(savedDish);
-            }, err => next(err));
+            favdoc.save().then(savedFav => Favorites.findById(savedFav.id).populate('user').populate('dishes') )
+            .then(favorite => res.status(200).json(favorite))
+            .catch(err => next(err));
         }
         else {
             Favorites.create({ user: req.user._id }).then(async favorites => {
@@ -56,10 +55,9 @@ favoriteRouter.route('/')
                         // }
                     }, err => next(err));  
                 };
-                favorites.save().then(doc => {
-                    res.status(200)
-                    .json(doc);
-                }, err => next(err));
+                favdoc.save().then(savedFav => Favorites.findById(savedFav.id).populate('user').populate('dishes') )
+                .then(favorite => res.status(200).json(favorite))
+                .catch(err => next(err));
             })
             .catch(err => next(err));
         }
@@ -110,8 +108,9 @@ favoriteRouter.route('/:dishId')
                 if (dish) {
                     if (doc.dishes.indexOf(dish._id) === -1) {
                         doc.dishes.push(dish._id);
-                        doc.save().then(saved => { res.status(200).json(saved); }
-                        , err => next(err));
+                        doc.save().then(savedFav => Favorites.findById(savedFav.id).populate('user').populate('dishes'))
+                        .then(favorite => { res.status(200).json(favorite); })
+                        .catch(err => next(err));
                     }
                     else {
                         res.status(200)
@@ -133,7 +132,8 @@ favoriteRouter.route('/:dishId')
                         favdoc.dishes.push(dish._id);
                         return favdoc.save();
                     })
-                    .then(doc => { res.status(200).json(doc); })
+                    .then(doc => Favorites.findById(doc.id).populate('user').populate('dishes'))
+                    .then(favorite => { res.status(200).json(favorite) })
                     .catch(err => next(err));
                 }
                 else {
@@ -151,7 +151,7 @@ favoriteRouter.route('/:dishId')
         if (doc) {
             if (doc.dishes.indexOf(req.params.dishId) !== -1) {
                 doc.dishes.splice(doc.dishes.indexOf(req.params.dishId), 1);
-                doc.save().then(doc => Favorites.findOne({ user: req.user._id }).populate('dishes'))
+                doc.save().then(doc => Favorites.findById(doc.id).populate('user').populate('dishes'))
                 .then(fav => { res.status(200).json(fav)})
                 .catch(err => next(err));
             }
